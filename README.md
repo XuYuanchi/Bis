@@ -3,3 +3,10 @@ Single-cell RNA sequencing (scRNA-seq) is a powerful technique that allows resea
 
 ## Overview
 <img src="https://github.com/XuYuanchi/Bis/blob/main/framework.png" height="300" width="1000">
+
+## Installation
+The code is implemented with Python, pytorch, and pytorch-lightning...
+Please refer to the configuration file in details.
+
+## Run the demos
+python train.py --dataset_name Spleen
