@@ -5,7 +5,7 @@ Single-cell RNA sequencing (scRNA-seq) offers a robust methodology for investiga
 
 ## Overview
 <div align=center>
-<img src="https://github.com/XuYuanchi/Bis/blob/main/framework.png" height="600" width="400">
+<img src="https://github.com/XuYuanchi/Bis/blob/main/framework.png" height="600" width="900">
 </div>
 ## Installation
 The code is implemented with Python, pytorch, and pytorch-lightning...
