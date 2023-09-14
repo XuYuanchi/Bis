@@ -47,15 +47,30 @@ $ conda create -n bis python=3.9.15
 $ conda activate bis
 $ conda env create -f environment.yml
 ```
-# Usage
-`Bis` is an optimal transport-based autoencoder model for single-cell imputation, which can be used to:
-+ Single-cell data imputation. The example can be seen in the <a href="https://github.com/XuYuanchi/Bis">demo.py</a>.
+# Detailed tutorials with example datasets
+`Bis` is an optimal transport-based autoencoder model for single-cell imputation, which can be used for single-cell data imputation. 
+The example can be seen in the <a href="https://github.com/XuYuanchi/Bis">demo.py</a>.
 
-
-We give users some suggestions for running in the <a href="https://github.com/XuYuanchi/Bis">tutorial.md</a>.
+Detailed tutorials with each section of the paper:
+* Click the links below to read detailed tutorials for different data analyses.
 
 # Data Availability
 The real data sets we used can be download in
 
 # License
 This project is covered under the **MIT License**.
+
+# Citation
+
+```
+@article{su2023distribution,
+  title={Distribution-agnostic Deep Learning Enables Accurate Single‐Cell Data Imputation and Transcriptional Regulation Interpretation},
+  author={Su, Yanchi, Yu, Zhuohan and Yang, Yuning and Wong, Ka-Chun and Li, Xiangtao},
+  journal={},
+  volume={},
+  number={},
+  pages={},
+  year={2023},
+  publisher={}
+}
+```
