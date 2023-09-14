@@ -41,10 +41,15 @@ pandas
 scanpy
 anndata
 ```
-For specific setting, please see <a href="https://github.com/XuYuanchi/Bis/blob/main/environment-Bis.yml">requirement</a>.
+For specific setting, please see <a href="https://github.com/XuYuanchi/Bis/blob/main/environment.yml">requirement</a>.
 
 # Installation Guide
-
+```
+$ git clone https://github.com/XuYuanchi/Bis.git
+$ conda create -n bis python=3.9.15
+$ conda activate bis
+$ conda env create -f environment.yml
+```
 # Usage
 
 # Data Availability
