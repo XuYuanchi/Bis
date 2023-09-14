@@ -1,5 +1,5 @@
 # Distribution-agnostic Deep Learning Enables Accurate Single‐Cell Data Imputation and Transcriptional Regulation Interpretation
-
+This repository contains code, data, tables and plots to support data analyses and reproduce results from the paper Distribution-agnostic Deep Learning Enables Accurate Single‐Cell Data Imputation and Transcriptional Regulation Interpretation.
 - [Abstract](#abstract)
 - [Overview](#overview)
 - [System Requirements](#system-requirements)
@@ -51,6 +51,11 @@ $ conda activate bis
 $ conda env create -f environment.yml
 ```
 # Usage
+`Bis` is an optimal transport-based autoencoder model for single-cell imputation, which can be used to:
++ Single-cell data imputation. The example can be seen in the <a href="https://github.com/XuYuanchi/Bis">demo.py</a>.
+
+
+We give users some suggestions for running in the <a href="https://github.com/XuYuanchi/Bis">tutorial.md</a>.
 
 # Data Availability
 The real data sets we used can be download in
