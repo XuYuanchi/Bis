@@ -11,6 +11,7 @@ import pytorch_lightning as pl
 from .utils import js_divergence
 from torchmetrics.functional import pearson_corrcoef
 import scipy.io as sio
+import pandas as pd
 
 def compute_kernel(x, y, kernel, imq_c):
     """
@@ -89,6 +90,12 @@ class wae(pl.LightningModule):
         out_dimentions = list(reversed(in_dimentions))
         self.encoder = DENcoder(in_dimentions, nn.ReLU(True), nn.Identity())
         self.decoder = DENcoder(out_dimentions, nn.ReLU(True), nn.Identity())
+        # self.drop = nn.Dropout(p=0.1)
+        # self.fc_mean = nn.Linear(in_dimentions[-2], in_dimentions[-1])
+        # self.fc_logvar = nn.Linear(in_dimentions[-2], in_dimentions[-1])
+        #input_dim = in_dimentions[0]
+        #self.low_rank_layer = DENcoder([input_dim, input_dim, input_dim] ,nn.ReLU(False), nn.Identity())
+        # self.criterion = nn.MSELoss()
         bulk_vec = self.get_Bulk_data(data_name)
         self.register_buffer("bulk_vec", bulk_vec)
         self.alpha = alpha
@@ -109,21 +116,41 @@ class wae(pl.LightningModule):
             bulk_adata = AnnData(np.array(f['data_true']).astype('float').T)
             sc.pp.normalize_total(bulk_adata, target_sum=1e6)
             bulk_info = torch.from_numpy(np.mean(bulk_adata.X, axis=0))
+        elif data_name=='deg': 
+            path = '/home/suyanchi/project/dab/data/' + data_name + '/bulk_2000.csv'
+            bulk_info = torch.from_numpy(pd.read_csv(path, delimiter=',', header=0, index_col=0).values)
+            bulk_info = torch.mean(bulk_info, dim=1)
+        elif data_name=='deg_raw': 
+            path = '/home/suyanchi/project/dab/data/' + data_name + '/bulk_raw.csv'
+            bulk_info = torch.from_numpy(pd.read_csv(path, delimiter=',', header=0, index_col=0).values)
+            bulk_info = torch.mean(bulk_info, dim=1)
             # print(bulk_info.shape)
         elif data_name in ['liver', 'heart', 'marrow', 'lung']:
             f = sio.loadmat('/home/suyanchi/project/dab/data/downsample/'+data_name+'.mat')
             bulk_adata = AnnData(np.array(f['data_bulk']).astype('float').T)
             sc.pp.normalize_total(bulk_adata, target_sum=1e6)
             bulk_info = torch.from_numpy(np.mean(bulk_adata.X, axis=0))
+        elif data_name in ['time', 'Deng', 'Petropoulos', "cell_lines", "panc8_rm", "uc3", "crc", 'human_pancreas', 'PBMC']:
+            bulk_info = None
+        elif data_name=='gse':
+            path = '/home/suyanchi/project/dab/data/ti/' + data_name + '_bulk.csv'
+            bulk_info = torch.from_numpy(pd.read_csv(path, delimiter=',', header=0, index_col=0).values)
+            bulk_info = torch.mean(bulk_info,dim=1)
         else:
             path = '/home/suyanchi/project/dab/data/' + data_name + '_bulk.csv'
             bulk_info = torch.from_numpy(np.loadtxt(path, delimiter=','))
-        return torch.log1p(bulk_info).unsqueeze(0)
+        if bulk_info is not None:
+            bulk_info = torch.log1p(bulk_info).unsqueeze(0)
+        return bulk_info
 
     def get_loss(self, x, x_hat, bulk_vec, alpha, q_z):
-
+        
+        if bulk_vec is not None:
+            bulk_vec = bulk_vec.float()
         # reconstruction loss
         # mse_loss = nn.functional.smooth_l1_loss(x_hat, x)
+        # mask = torch.where(x==0, torch.zeros_like(x), torch.ones_like(x))
+        # mse_loss = nn.functional.mse_loss(x_hat.mul(mask), x.mul(mask))
         mse_loss = nn.functional.mse_loss(x_hat, x)
         # d loss
         p_z = Variable(torch.rand_like(q_z)*1)
@@ -133,12 +160,24 @@ class wae(pl.LightningModule):
         # d_loss = mmd(q_z, p_z, "IMQ", 1)
         x_mean = torch.mean(x_hat, 0).unsqueeze(0)
         # r_loss = nn.functional.mse_loss(x_mean, bulk_vec)/pearson_corrcoef(x_mean, bulk_vec)
-        r_loss = nn.functional.mse_loss(x_mean, bulk_vec)
-
-        re_loss = nn.functional.kl_div(x_mean, bulk_vec)
-
-        loss = mse_loss + 0.01*mmd_loss + 0.5*re_loss + 0*r_loss
+        # if bulk_vec is not None:
+        #     r_loss = nn.functional.mse_loss(x_mean, bulk_vec)
+        # r_loss = pearson_corrcoef(x_mean, bulk_vec)
+        # CE = nn.CrossEntropyLoss()
+        # re_loss = CE(x_mean, bulk_vec)
+        # re_loss = nn.functional.kl_div(F.softmax(x_mean, dim=-1).log(), F.softmax(bulk_vec, dim=-1))
+        re_loss = 0
+        if bulk_vec is not None:
+            # re_loss = nn.functional.mse_loss(x_mean, bulk_vec)
+            re_loss = nn.functional.kl_div(x_mean, bulk_vec)
+        # re_loss = sinkhorn_normalized(x_mean, bulk_vec, 0.01, 512, 100)
+        # re_loss = js_divergence(x_mean, bulk_vec)
+        # re_loss = self.imq_kernel(x_mean, bulk_vec,x_hat.shape[1])
+        loss = mse_loss +10*mmd_loss + 0.0*re_loss
         # clustering 0.01, 0.5
+        # dec 0, 0
+        # ti gse 0.5
+        # batch uc3 10; human_pancreas
         return loss
 
     def imq_kernel(self, X: torch.Tensor, Y: torch.Tensor, h_dim: int):
@@ -232,7 +271,7 @@ class wae(pl.LightningModule):
         # add bulk constrains loss
         # loss = nn.functional.mse_loss(x_hat, x) + nn.functional.mse_loss(torch.mean(x_hat, 0), self.bulk_vec.float())
         # loss = self.get_loss(x, x_hat, self.bulk_vec.float(), self.alpha)
-        loss = self.get_loss(x, x_hat, self.bulk_vec.float(), self.alpha, q_z)
+        loss = self.get_loss(x, x_hat, self.bulk_vec, self.alpha, q_z)
         # Logging to TensorBoard by default
         self.log("train_loss", loss, prog_bar=True)
         return loss
@@ -245,7 +284,7 @@ class wae(pl.LightningModule):
         # add bulk constrains loss
         # loss = nn.functional.mse_loss(x_hat, x) + nn.functional.mse_loss(torch.mean(x_hat, 0), self.bulk_vec.float())
         # loss = self.get_loss(x, x_hat, self.bulk_vec.float(), self.alpha)
-        loss = self.get_loss(x, x_hat, self.bulk_vec.float(), self.alpha, q_z)
+        loss = self.get_loss(x, x_hat, self.bulk_vec, self.alpha, q_z)
         # Logging to TensorBoard by default
         self.log("test_loss", loss, prog_bar=True)
 
@@ -257,7 +296,7 @@ class wae(pl.LightningModule):
         # add bulk constrains loss
         # loss = nn.functional.mse_loss(x_hat, x) + nn.functional.mse_loss(torch.mean(x_hat, 0), self.bulk_vec.float())
         # loss = self.get_loss(x, x_hat, self.bulk_vec.float(), self.alpha)
-        loss = self.get_loss(x, x_hat, self.bulk_vec.float(), self.alpha, q_z)
+        loss = self.get_loss(x, x_hat, self.bulk_vec, self.alpha, q_z)
         # Logging to TensorBoard by default
         self.log("val_loss", loss, prog_bar=True)
     

@@ -6,7 +6,9 @@ from pandas import DataFrame, Series
 import pytorch_lightning as pl
 import scanpy as sc
 from torch.utils.data import Dataset, DataLoader, random_split
-
+import h5py
+import scipy.io as sio
+import scipy.sparse as sp
 
 class DatasetWithConfounder(Dataset):
     def __init__(self, X: DataFrame, sf: DataFrame):
@@ -34,11 +36,53 @@ class DataModule(pl.LightningDataModule):
         self.ann_data = None
         self.Dataset = data_name
 
-    def prepare_data(self, filter_min_counts=False, size_factors=True, normalize_input=True, logtrans_input=True):
+    def prepare_data(self, filter_min_counts=False, size_factors=False, normalize_input=False, logtrans_input=True):
         # loading and proprecessing data
-        file_path = self.data_dir + self.Dataset + '_dropout.csv'
-        self.ann_data = sc.read_csv(file_path, first_column_names=True)
-        self.ann_data = self.ann_data.T
+        if self.Dataset == '1M':
+            f = h5py.File('/home/suyanchi/project/dab/data/1M/1M.h5')
+            dat_sc = f['data']
+            f.close
+            self.ann_data = sc.AnnData(pd.DataFrame(np.array(dat_sc)).values)
+        elif self.Dataset in ["cell_lines", "panc8_rm", "uc3", "crc",'human_pancreas']:
+            self.ann_data = sc.read_h5ad('/home/suyanchi/project/dab/data/batch/'+ self.Dataset+'.h5ad')
+            if sp.issparse(self.ann_data.X):
+                self.ann_data.X = self.ann_data.X.toarray()
+            # normalize_input = True
+        elif self.Dataset == 'PBMC':
+            self.ann_data = sc.read_h5ad('/home/suyanchi/project/dab/data/case/'+ self.Dataset+'.h5ad')
+            if sp.issparse(self.ann_data.X):
+                self.ann_data.X = self.ann_data.X.toarray()
+        elif self.Dataset == 'time':
+            # f = h5py.File('/home/suyanchi/project/dab/data/time/500000.h5')
+            f = h5py.File('/home/suyanchi/project/dab/data/1M/1M.h5')
+            dat_sc = f['data']
+            f.close
+            self.ann_data = sc.AnnData(pd.DataFrame(np.array(dat_sc[:,1:1000])).values)
+            # self.ann_data = sc.AnnData(pd.DataFrame(np.array(dat_sc)).values.T)
+        elif self.Dataset == 'test':
+            file_path = self.data_dir + self.Dataset + '/6/1.mat'
+            f = sio.loadmat(file_path)
+            self.ann_data = sc.AnnData(pd.DataFrame(np.array(f['data_dropout']).T))
+        elif self.Dataset == 'deg':
+            file_path = self.data_dir + self.Dataset + '/sc_2000.csv'
+            self.ann_data = sc.read_csv(file_path, first_column_names=True)
+            self.ann_data = self.ann_data.T
+        elif self.Dataset == 'deg_raw':
+            file_path = self.data_dir + self.Dataset + '/sc_raw.csv'
+            self.ann_data = sc.read_csv(file_path, first_column_names=True)
+            self.ann_data = self.ann_data.T
+        elif self.Dataset in ['liver', 'heart', 'marrow', 'lung']:
+            file_path = self.data_dir + 'downsample/' + self.Dataset + '.mat'
+            f= sio.loadmat(file_path)
+            self.ann_data = sc.AnnData(pd.DataFrame(np.array(f['data_sc']).T))
+        elif self.Dataset in ['gse', 'Deng', 'Petropoulos']:
+            file_path = self.data_dir + 'ti/' + self.Dataset + '.csv'
+            self.ann_data = sc.read_csv(file_path, first_column_names=True)
+            self.ann_data = self.ann_data.T
+        else:
+            file_path = self.data_dir + self.Dataset + '_dropout.csv'
+            self.ann_data = sc.read_csv(file_path, first_column_names=True)
+            self.ann_data = self.ann_data.T
         # filter cell and gene
         if filter_min_counts:
             sc.pp.filter_genes(self.ann_data, min_counts=1)
@@ -77,16 +121,23 @@ class DataModule(pl.LightningDataModule):
         return DataLoader(
             self.dataset_train,
             batch_size=self.batch_size,
+            num_workers=3,
+            shuffle=False,
+            drop_last=False
         )
 
     def val_dataloader(self):
         return DataLoader(
             self.dataset_val,
             batch_size=self.batch_size,
+            num_workers=3
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.dataset_test,
-            batch_size=len(self.dataset_test)
+            self.data_set,
+            batch_size=len(self.data_set),
+            num_workers=3,
+            drop_last=False, 
+            shuffle=False
         )
