@@ -51,9 +51,9 @@ $ conda env create -f environment.yml
 ```
 # Detailed tutorials with example datasets
 `Bis` is an optimal transport-based autoencoder model for single-cell imputation, which can be used for single-cell data imputation. 
-The example can be seen in the <a href="https://github.com/XuYuanchi/Bis/train.py">train.py</a>.
+The example can be seen in the <a href="https://github.com/XuYuanchi/Bis/blob/main/train.py">train.py</a>.
 
-Detailed tutorials with each section of the paper can be seen in the folder <a href="https://github.com/XuYuanchi/Bis/analysis">analysis</a>.
+Detailed tutorials with each section of the paper can be seen in the folder <a href="https://github.com/XuYuanchi/Bis/tree/main/analysis">analysis</a>.
 
 # Data Availability
 The real data sets we used can be download in
