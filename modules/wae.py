@@ -173,11 +173,8 @@ class wae(pl.LightningModule):
         # re_loss = sinkhorn_normalized(x_mean, bulk_vec, 0.01, 512, 100)
         # re_loss = js_divergence(x_mean, bulk_vec)
         # re_loss = self.imq_kernel(x_mean, bulk_vec,x_hat.shape[1])
-        loss = mse_loss +10*mmd_loss + 0.0*re_loss
-        # clustering 0.01, 0.5
-        # dec 0, 0
-        # ti gse 0.5
-        # batch uc3 10; human_pancreas
+        loss = mse_loss +0.01*mmd_loss + 0.5*re_loss
+
         return loss
 
     def imq_kernel(self, X: torch.Tensor, Y: torch.Tensor, h_dim: int):
