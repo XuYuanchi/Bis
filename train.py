@@ -1,5 +1,6 @@
 import scipy.io as scio
 import torch
+import anndata as ad
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
@@ -12,11 +13,12 @@ from argparse import ArgumentParser
 seed_everything(42, workers=True)
 def train(hparams):
     train_loader = DataModule(data_name=hparams.dataset_name, batchsize=hparams.batchsize)
-    train_loader.prepare_data()
+    train_loader.prepare_data(logtrans_input=False)
     train_loader.setup()
 
     in_dim = train_loader.ann_data.n_vars
     dimentions = [in_dim, 512, 128, 32]
+    # dimentions = [in_dim, 512, 128, 32]
     # dimentions = [in_dim, 128, 32]
 
     # load bulk information
@@ -55,10 +57,19 @@ def train(hparams):
     # predict 
     results = trainer.predict(autoEncoder, train_loader.test_dataloader())
 
+    re = results[0][0].numpy()
     # save results gene * cell
-    re = (torch.exp(results[0][0])-1).numpy().T
-    path = "/home/suyanchi/project/dab/results/" + hparams.dataset_name + ".mat"
-    scio.savemat(path, {'re':re})
+    # re = (torch.exp(results[0][0])-1).numpy().T
+    # re = (torch.exp(results[0][0])-1).numpy()
+    X = train_loader.ann_data.raw.X
+    mask = (X>0)
+    re[mask] = X[mask]
+    # re = results[0][0].numpy().T
+    # path = "/home/suyanchi/project/dab/results/" + hparams.dataset_name + ".mat"
+    # scio.savemat(path, {'re':re.T})
+    adata = ad.AnnData(re)
+    adata.write("/home/suyanchi/project/dab/results/" + hparams.dataset_name + ".h5ad")
+    # scio.savemat(path, {'re':results[0][0].numpy().T})
 
     
 
@@ -68,8 +79,9 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('--gpus', default="1")
     parser.add_argument('--max_epochs', default=1000)
-    parser.add_argument('--dataset_name', default="Spleen")
-    parser.add_argument('--batchsize', default=512)
+    parser.add_argument('--dataset_name', default="deg_raw")
+    parser.add_argument('--batchsize', default=1024)
+    # parser.add_argument('--batchsize', default=512)
     parser.add_argument('--alpha', default=1)
     args = parser.parse_args()
 
