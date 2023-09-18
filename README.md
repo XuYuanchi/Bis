@@ -56,7 +56,7 @@ The example can be seen in the <a href="https://github.com/XuYuanchi/Bis/blob/ma
 Detailed tutorials with each section of the paper can be seen in the folder <a href="https://github.com/XuYuanchi/Bis/tree/main/analysis">analysis</a>.
 
 # Data Availability
-The real data sets we used can be download in
+The datasets we used can be downloaded from Figshare. 
 
 # License
 This project is covered under the **MIT License**.
