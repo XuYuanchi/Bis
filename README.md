@@ -56,7 +56,7 @@ The example can be seen in the <a href="https://github.com/XuYuanchi/Bis/blob/ma
 Detailed tutorials with each section of the paper can be seen in the folder <a href="https://github.com/XuYuanchi/Bis/tree/main/analysis">analysis</a>.
 
 # Data Availability
-The datasets we used can be downloaded from Figshare. 
+The data that support the findings of this study are openly available in <a href="https://doi.org/10.5281/zenodo.8395467">Zenodo<\a>
 
 # License
 This project is covered under the **MIT License**.
