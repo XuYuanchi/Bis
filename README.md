@@ -1,4 +1,4 @@
-# Distribution-agnostic Deep Learning Enables Accurate Single‐Cell Data Imputation and Transcriptional Regulation Interpretation
+# Distribution-agnostic Deep Learning Enables Accurate Single‐Cell Data Recovery and Transcriptional Regulation Interpretation
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 This repository contains code, data, tables and plots to support data analyses and reproduce results from the paper Distribution-agnostic Deep Learning Enables Accurate Single‐Cell Data Imputation and Transcriptional Regulation Interpretation.
