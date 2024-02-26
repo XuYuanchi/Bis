@@ -64,14 +64,12 @@ This project is covered under the **MIT License**.
 # Citation
 
 ```
-@article{su2023distribution,
-  title={Distribution-agnostic Deep Learning Enables Accurate Single‐Cell Data Imputation and Transcriptional Regulation Interpretation},
-  author={Su, Yanchi, Yu, Zhuohan and Yang, Yuning and Wong, Ka-Chun and Li, Xiangtao},
-  journal={},
-  volume={},
-  number={},
-  pages={},
-  year={2023},
-  publisher={}
+@article{su2024distribution,
+  title={Distribution-Agnostic Deep Learning Enables Accurate Single-Cell Data Recovery and Transcriptional Regulation Interpretation},
+  author={Su, Yanchi and Yu, Zhuohan and Yang, Yuning and Wong, Ka-Chun and Li, Xiangtao},
+  journal={Advanced Science},
+  pages={2307280},
+  year={2024},
+  publisher={Wiley Online Library}
 }
 ```
